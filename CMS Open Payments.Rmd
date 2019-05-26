@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+##Data Preperataion
+
+```{r fetchdata, include=TRUE,echo=FALSE}
+cwd <- paste0(getwd())
+setwd(cwd)
+
+download.file(url = "https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c-pQ/CMS_OPEN_PAYMENTS_DEC_2013.zip"
+              ,destfile = "CMS_OPEN_PAYMENTS_DEC_2013.zip")
+cmszip <- unzip("CMS_OPEN_PAYMENTS_DEC_2013.zip")
+cmspayments <- read.csv(cmszip)
+
+```
+
+
+### Data Exploration
+1.	Who are the top 10 companies making payments?  For the top five companies, what therapeutic areas are they investing in? 
+Create data visualizations to compare and contrast these five companies and highlight any potential insights and tell a story based on what you see. 
+(For the purposes of this question, assume that “Physician_Specialty” is equivalent to therapeutic area.) 
+
+
+```{r dataexploration, echo=TRUE,include=TRUE}
+#names(cmspayments)
+#Companies is "Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name"
+toppayor <- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
+                                                        + Physician_Specialty
+                      ,cmspayments,FUN = sum)
+colnames(toppayor) <- c("Company","TotalPayment")
+
+
+```
