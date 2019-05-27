@@ -31,3 +31,8 @@ toppayor <- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_
                       ,cmspayments,FUN = sum)
 colnames(toppayor) <- c("Company","TotalPayment", "Physician_Specialty")
 ```
+
+
+
+
+
