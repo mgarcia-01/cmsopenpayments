@@ -1,31 +1,42 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Compliance Analytics Open Payments Case "
+author: "Michael Garcia"
+date: "May 28, 2019"
+output:
+  html_notebook: default
+  pdf_document: default
+  word_document: default
 ---
 
-##Data Preperataion
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-```{r fetchdata, include=TRUE,echo=FALSE}
+```{r loadpkg, include=TRUE,echo=FALSE, message=FALSE}
 library(RSQLite)
 library(DBI)
 library(tidyr)
+library(ggplot2)
+library(plotly)
+```
 
+## Data Preparation
+
+```{r fetchdata, include=TRUE,echo=FALSE, message=FALSE}
 cwd <- paste0(getwd())
 setwd(cwd)
 
 download.file(url = "https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c-pQ/CMS_OPEN_PAYMENTS_DEC_2013.zip"
               ,destfile = "CMS_OPEN_PAYMENTS_DEC_2013.zip")
+
+
 cmszip <- unzip("CMS_OPEN_PAYMENTS_DEC_2013.zip")
 cmspayments <- read.csv(cmszip)
-
 ```
 
 
-### Data Exploration
-1.	Who are the top 10 companies making payments?  For the top five companies, what therapeutic areas are they investing in? 
-Create data visualizations to compare and contrast these five companies and highlight any potential insights and tell a story based on what you see. 
-(For the purposes of this question, assume that “Physician_Specialty” is equivalent to therapeutic area.) 
-
+### Top Companies Prep
+Bring top companies into dataframe.
 
 ```{r toppayer, echo=TRUE,include=TRUE}
 #names(cmspayments)
@@ -38,7 +49,10 @@ toppayor <- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 
 toppayor
 ```
 
+### Simplify the data manipulation
+Using RSQLite, use SQL to simplify data manipulation.
 
+Using the top companies dataframe, write to table. 
 ```{r sqltransform, echo=TRUE, include=TRUE}
 rsqlcon <- dbConnect(RSQLite::SQLite(), ":memory:")
 
@@ -65,6 +79,10 @@ print(topCompany)
 
 
 
+Create a dataset with company, payment specialty, and total payments. Group by the attributes and sum the measures.
+Then get the top companies with specialty only if they exist in the top 10 companies data frame.
+
+
 ```{r topspecialty, echo= TRUE, include= TRUE}
 topspecialty <- RSQLite::dbGetQuery(conn = rsqlcon
                     , "select c.Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as Company
@@ -82,6 +100,26 @@ topspecialty <- RSQLite::dbGetQuery(conn = rsqlcon
 
 print(topspecialty)
 ```
+
+## Visualize
+1. Top 10 companies barchart
+2. Top 5 companies
+```{r visualize,include=TRUE, echo=TRUE}
+
+#plot_ly(x = c(topCompany$Company)
+#       ,y = c(topCompany$TotalPayments)
+#       ,type = "bar")
+#par(mfrow - c(2,2))
+g <- ggplot(topCompany,aes(Company,TotalPayments/1000000))
+g+geom_bar(stat = "identity"
+           ,colour = "dark blue"
+           ,fill = "dodger blue") +theme(axis.text.x = element_text(angle=45
+                                                                ,hjust = 1)
+                                     ,axis.text.y = element_text(angle = 45)
+                                     )+ labs(y = "Total Payments")
+```
+
+
 
 
 
