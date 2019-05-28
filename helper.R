@@ -1,6 +1,6 @@
 top_companies <- function(physician_specialty = NULL,  topN = 10){
   as.character(physician_specialty)
-  
+
   if(is.null(physician_specialty) == FALSE)
   {
     toppayor <- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
@@ -13,8 +13,8 @@ top_companies <- function(physician_specialty = NULL,  topN = 10){
     #a <-  plyr::ddply(order_prod_prior_dept,.(department, aisle,product_name),summarize
     #             ,no_dist_orders=(length(unique(order_id))))
     names(toppayor) <- c("department", "aisle", "product_name", "no_orders")
-    das <- toppayor[which(toppayor$department == department & toppayor$aisle == aisle),]
-    asort <- head(das[order(das$no_orders, decreasing= TRUE),], n = topN)
+    tsort <- toppayor[which(toppayor$department == department & toppayor$aisle == aisle),]
+    asort <- head(tsort[order(das$no_orders, decreasing= TRUE),], n = topN)
     return(asort)
   } else if(is.null(department) == TRUE & is.null(aisle) ==  TRUE )
   {toppayor <- aggregate(order_prod_prior_dept$order_id
