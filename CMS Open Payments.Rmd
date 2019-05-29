@@ -1,35 +1,135 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Compliance Analytics Open Payments Case "
+author: "Michael Garcia"
+date: "May 28, 2019"
+output:
+  html_notebook: default
+  pdf_document: default
+  word_document: default
 ---
 
-##Data Preperataion
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-```{r fetchdata, include=TRUE,echo=FALSE}
+```{r loadpkg, include=TRUE,echo=FALSE, message=FALSE}
+library(RSQLite)
+library(DBI)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+```
+
+## Data Preparation
+
+```{r fetchdata, include=TRUE,echo=FALSE, message=FALSE}
 cwd <- paste0(getwd())
 setwd(cwd)
 
 download.file(url = "https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c-pQ/CMS_OPEN_PAYMENTS_DEC_2013.zip"
               ,destfile = "CMS_OPEN_PAYMENTS_DEC_2013.zip")
+
+
 cmszip <- unzip("CMS_OPEN_PAYMENTS_DEC_2013.zip")
 cmspayments <- read.csv(cmszip)
-
 ```
 
 
-### Data Exploration
-1.	Who are the top 10 companies making payments?  For the top five companies, what therapeutic areas are they investing in? 
-Create data visualizations to compare and contrast these five companies and highlight any potential insights and tell a story based on what you see. 
-(For the purposes of this question, assume that “Physician_Specialty” is equivalent to therapeutic area.) 
+### Top Companies Prep
+Bring top companies into dataframe.
 
-
-```{r dataexploration, echo=TRUE,include=TRUE}
+```{r toppayer, echo=TRUE,include=TRUE}
 #names(cmspayments)
 #Companies is "Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name"
 toppayor <- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
-                                                        + Physician_Specialty
+                                                        
                       ,cmspayments,FUN = sum)
 colnames(toppayor) <- c("Company","TotalPayment")
-
-
+toppayor <- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 10)
+toppayor
 ```
+
+### Simplify the data manipulation
+Using RSQLite, use SQL to simplify data manipulation.
+
+Using the top companies dataframe, write to table. 
+```{r sqltransform, echo=TRUE, include=TRUE}
+rsqlcon <- dbConnect(RSQLite::SQLite(), ":memory:")
+
+dbWriteTable(conn = rsqlcon
+             ,"cmspaytable"
+             ,cmspayments
+             ,overwrite = TRUE)
+
+topCompany <- RSQLite::dbGetQuery(conn = rsqlcon
+                                ,"select Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as Company
+                                        ,sum(Total_Amount_of_Payment_USDollars) as TotalPayments
+                                  from cmspaytable
+                                  group by 1
+                                  order by 2 desc
+                                  limit 10"
+                                  )
+##has top company by revenue
+dbWriteTable(conn = rsqlcon
+             ,"topcompanytable"
+             ,topCompany
+             ,overwrite = TRUE)
+print(topCompany)
+```
+
+
+
+Create a dataset with company, payment specialty, and total payments. Group by the attributes and sum the measures.
+Then get the top companies with specialty only if they exist in the top 10 companies data frame.
+
+
+```{r topspecialty, echo= TRUE, include= TRUE}
+topspecialty <- RSQLite::dbGetQuery(conn = rsqlcon
+                    , "select c.Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as Company
+                             ,c.Physician_Specialty
+                             ,sum(c.Total_Amount_of_Payment_USDollars) as TotalPayments
+                       from cmspaytable as c inner join (select distinct Company
+                                          from topcompanytable
+                                          order by topcompanytable.TotalPayments desc
+                                          limit 5
+                                          ) as tt on c.Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
+                                                   = tt.Company
+                       group by 1,2
+                       order by 3 desc,2,1
+                    ")
+
+print(topspecialty)
+```
+
+## Visualize
+1. Top 10 companies barchart
+2. Top 5 companies
+```{r visualize,include=TRUE, echo=TRUE}
+
+#plot_ly(x = c(topCompany$Company)
+#       ,y = c(topCompany$TotalPayments)
+#       ,type = "bar")
+#par(mfrow - c(2,2))
+g <- ggplot(topCompany,aes(Company,TotalPayments/1000000))
+g+geom_bar(stat = "identity"
+           ,colour = "dark blue"
+           ,fill = "dodger blue") +theme(axis.text.x = element_text(angle=45
+                                                                ,hjust = 1)
+                                     ,axis.text.y = element_text(angle = 45)
+                                     )+ labs(y = "Total Payments")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
