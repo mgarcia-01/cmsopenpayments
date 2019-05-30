@@ -1775,12 +1775,25 @@ $(document).ready(function () {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-output-begin eyJkYXRhIjoidHJ5aW5nIFVSTCAnaHR0cHM6Ly9zMy5hbWF6b25hd3MuY29tL2lzdHJlZXQtYXNzZXRzL2kwamhzel9VZGlfWmwyanhKLWMtcFEvQ01TX09QRU5fUEFZTUVOVFNfREVDXzIwMTMuemlwJ1xuQ29udGVudCB0eXBlICdhcHBsaWNhdGlvbi94LXppcC1jb21wcmVzc2VkJyBsZW5ndGggMzk5Mjk2MjkgYnl0ZXMgKDM4LjEgTUIpXG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuZG93bmxvYWRlZCAzOC4xIE1CXG4ifQ== -->
+<pre><code>trying URL 'https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c-pQ/CMS_OPEN_PAYMENTS_DEC_2013.zip'
+Content type 'application/x-zip-compressed' length 39929629 bytes (38.1 MB)
+==================================================
+downloaded 38.1 MB</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<<<<<<< HEAD
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25hbWVzKGNtc3BheW1lbnRzKVxuI0NvbXBhbmllcyBpcyBcIlN1Ym1pdHRpbmdfQXBwbGljYWJsZV9NYW51ZmFjdHVyZXJfb3JfQXBwbGljYWJsZV9HUE9fTmFtZVwiXG50b3BwYXlvciA8LSBhZ2dyZWdhdGUoVG90YWxfQW1vdW50X29mX1BheW1lbnRfVVNEb2xsYXJzIH4gU3VibWl0dGluZ19BcHBsaWNhYmxlX01hbnVmYWN0dXJlcl9vcl9BcHBsaWNhYmxlX0dQT19OYW1lXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICsgUGh5c2ljaWFuX1NwZWNpYWx0eVxuICAgICAgICAgICAgICAgICAgICAgICxjbXNwYXltZW50cyxGVU4gPSBzdW0pXG5jb2xuYW1lcyh0b3BwYXlvcikgPC0gYyhcIkNvbXBhbnlcIixcIlRvdGFsUGF5bWVudFwiKVxuXG5cbmBgYCJ9 -->
+<pre class="r"><code>#names(cmspayments)
+#Companies is &quot;Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name&quot;
+toppayor &lt;- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
+                                                        + Physician_Specialty
+=======
 <!-- rnb-output-begin eyJkYXRhIjoidHJ5aW5nIFVSTCAnaHR0cHM6Ly9zMy5hbWF6b25hd3MuY29tL2lzdHJlZXQtYXNzZXRzL2kwamhzel9VZGlfWmwyanhKLWMtcFEvQ01TX09QRU5fUEFZTUVOVFNfREVDXzIwMTMuemlwJ1xuQ29udGVudCB0eXBlICdhcHBsaWNhdGlvbi94LXppcC1jb21wcmVzc2VkJyBsZW5ndGggMzk5Mjk2MjkgYnl0ZXMgKDM4LjEgTUIpXG49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuZG93bmxvYWRlZCAzOC4xIE1CXG4ifQ== -->
 <pre><code>trying URL 'https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c-pQ/CMS_OPEN_PAYMENTS_DEC_2013.zip'
 Content type 'application/x-zip-compressed' length 39929629 bytes (38.1 MB)
@@ -1799,6 +1812,7 @@ downloaded 38.1 MB</code></pre>
 #Companies is &quot;Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name&quot;
 toppayor &lt;- aggregate(Total_Amount_of_Payment_USDollars ~ Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name
                                                         
+>>>>>>> 4d3ad48af14d3035fd0d4e31497cf4b5a7a8bd66
                       ,cmspayments,FUN = sum)
 colnames(toppayor) &lt;- c(&quot;Company&quot;,&quot;TotalPayment&quot;)
 toppayor &lt;- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 10)
