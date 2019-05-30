@@ -127,6 +127,9 @@ g+geom_bar(stat = "identity"
 #       ,y = c(topCompany$TotalPayments)
 #       ,type = "bar")
 #par(mfrow - c(2,2))
+ts <- aggregate(TotalPayments~Physician_Specialty,topspecialty,sum)
+
+
 b <- ggplot(topspecialty,aes(Company,TotalPayments/1000000
                            ,fill = rep(unlist(Physician_Specialty)))
             )
@@ -139,9 +142,32 @@ b+geom_bar(stat = "identity"
                                      )+ labs(y = "Total Payments")
 ```
 
+```{r treemap, echo=TRUE,include=TRUE}
+
+
+specialtytree <- file.path(getwd(),paste("specialtytreemap",".png",sep = ""))
+png(filename = specialtytree,
+    width = 1000, height = 850, units = "px", pointsize = 12,
+    bg = "white",  res = NA,## ...,
+    ##type = c("cairo", "cairo-png", "Xlib", "quartz"), 
+    antialias = c("default")
+)
+
+
+
+treemap::treemap(dtf = topspecialty, index = c("Company","Physician_Specialty")
+                 ,type = "index"
+                 , fontsize.labels=c(14,10,8)
+                 , vSize = "TotalPayments"
+                 ,vColor = "Physician_Specialty"
+                 ,command.line.output = FALSE
+                 ,fontface.labels = "bold"
+                 ,palette = "Set1"
+                 ,fun.aggregate = "sum")
+dev.off()
 ```
 
-
+![Specialty Tree Map](specialtytreemap.png)
 
 
 
