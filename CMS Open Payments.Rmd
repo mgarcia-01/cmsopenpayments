@@ -122,7 +122,24 @@ g+geom_bar(stat = "identity"
 
 
 
+```{r visualizespecialty, echo=TRUE,include=TRUE}
+#plot_ly(x = c(topCompany$Company)
+#       ,y = c(topCompany$TotalPayments)
+#       ,type = "bar")
+#par(mfrow - c(2,2))
+b <- ggplot(topspecialty,aes(Company,TotalPayments/1000000
+                           ,fill = rep(unlist(Physician_Specialty)))
+            )
 
+b+geom_bar(stat = "identity"
+           ,colour = "dark blue"
+           ,fill = "dodger blue") +theme(axis.text.x = element_text(angle=45
+                                                                ,hjust = 1)
+                                     ,axis.text.y = element_text(angle = 45)
+                                     )+ labs(y = "Total Payments")
+```
+
+```
 
 
 
