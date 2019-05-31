@@ -32,6 +32,11 @@ download.file(url = "https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c
 
 cmszip <- unzip("CMS_OPEN_PAYMENTS_DEC_2013.zip")
 cmspayments <- read.csv(cmszip)
+### physician specialty has nas
+cmspayments$Physician_Specialty <- within(cmspayments, X <- ifelse(nchar(as.character(cmspayments$Physician_Specialty))==0
+                                                , "NA"
+                                                ,cmspayments$Physician_Specialty)
+                      )
 ```
 
 
@@ -50,12 +55,12 @@ toppayor <- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 
 
 
 ```{r physspecial_split,echo=TRUE, include=TRUE}
-abc <- separate(data = cmspayments,col= Physician_Specialty 
-                ,into = "NA", sep = "[|]", remove = TRUE,
-                convert = FALSE
-                ,extra = "merge")
-#, extra = "warn", fill = "warn", ...)
+
+#within(cmspayments, FOO<-data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty), '|', fixed=TRUE))))
+foo <- data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty),'|',fixed=TRUE)))
+
 ```
+
 
 ### Simplify the data manipulation
 Using RSQLite, use SQL to simplify data manipulation.
@@ -105,7 +110,11 @@ topspecialty <- RSQLite::dbGetQuery(conn = rsqlcon
                        group by 1,2
                        order by 3 desc,2,1
                     ")
-
+topspecialty$Physician_Specialty <- within(topspecialty, X <- ifelse(nchar(topspecialty$Physician_Specialty) == "0"
+                                                          , "NA"
+                                                          ,topspecialty$Physician_Specialty)
+                                          )
+                      
 print(topspecialty)
 ```
 
