@@ -33,10 +33,10 @@ download.file(url = "https://s3.amazonaws.com/istreet-assets/i0jhsz_Udi_Zl2jxJ-c
 cmszip <- unzip("CMS_OPEN_PAYMENTS_DEC_2013.zip")
 cmspayments <- read.csv(cmszip)
 ### physician specialty has nas
-cmspayments$Physician_Specialty <- within(cmspayments, X <- ifelse(nchar(as.character(cmspayments$Physician_Specialty))==0
+cmspayments$Physician_Specialty <-  as.character(cmspayments$Physician_Specialty)
+cmspayments$Physician_Specialty <- ifelse(nchar(cmspayments$Physician_Specialty)== 0
                                                 , "NA"
                                                 ,cmspayments$Physician_Specialty)
-                      )
 ```
 
 
@@ -57,7 +57,8 @@ toppayor <- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 
 ```{r physspecial_split,echo=TRUE, include=TRUE}
 
 #within(cmspayments, FOO<-data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty), '|', fixed=TRUE))))
-foo <- data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty),'|',fixed=TRUE)))
+physplit <- data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty),'|',fixed=TRUE)))
+colnames(physplit) <- c("PhysSpcOne","PhysSpcTwo","PhysSpcThree")
 
 ```
 
