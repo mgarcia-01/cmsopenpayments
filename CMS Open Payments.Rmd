@@ -142,30 +142,10 @@ g+geom_bar(stat = "identity"
                 geom_hline(yintercept = mean(topCompany$TotalPayments/1000000), color="blue")
 ```
 
-```{r topspecialtysummary, echo=TRUE,include=TRUE}
-summary(topspecialty)
-```
 
 
-```{r visualizespecialty_copy, echo=FALSE,include=FALSE}
-#plot_ly(x = c(topCompany$Company)
-#       ,y = c(topCompany$TotalPayments)
-#       ,type = "bar")
-#par(mfrow - c(2,2))
-ts <- aggregate(TotalPayments~Physician_Specialty,topspecialty,sum)
 
 
-b <- ggplot(topspecialty,aes(Company,TotalPayments/1000000
-                           ,fill = rep(unlist(Physician_Specialty)))
-            )
-
-b+geom_bar(stat = "identity"
-           ,colour = "dark blue"
-           ,fill = "dodger blue") +theme(axis.text.x = element_text(angle=45
-                                                                ,hjust = 1)
-                                     ,axis.text.y = element_text(angle = 45)
-                                     )+ labs(y = "Total Payments")
-```
 
 
 
@@ -217,6 +197,13 @@ dev.off()
 
 ### Physician Group Analysis
 
+Based on the summary, the highest Average Payment is received by Teaching Hospitals.
+The Medical Doctors received the 74% of the payments while Chiropractors received .001%
+
+Medical doctors also received the highest quantity of payments at 86%. 
+Doctor of Optometry received 2% while only receiving 1% of the payments from total.
+
+
 
 ```{r trends, echo=TRUE, include=TRUE}
 
@@ -237,6 +224,10 @@ physidcount <- aggregate(Total_Amount_of_Payment_USDollars~Covered_Recipient_Typ
                      ,data = phys
                      ,FUN = "length"
                      )
+physsum <- aggregate(Total_Amount_of_Payment_USDollars~Covered_Recipient_Type+Physician_Primary_Type
+                     ,data = phys
+                     ,FUN = "sum"
+                     )
 
 physummary <- merge(x=physmean,y=physidcount, by = c("Physician_Primary_Type"
                                                ,"Covered_Recipient_Type")
@@ -244,8 +235,20 @@ physummary <- merge(x=physmean,y=physidcount, by = c("Physician_Primary_Type"
 colnames(physummary) <- c("Physician_Primary_Type","Covered_Recipient_Type"
                           ,"AveragePayment","NumberofPayments")
 
+physummary <- merge(x=physummary,y=physsum,by = c("Physician_Primary_Type"
+                                               ,"Covered_Recipient_Type")
+                  )
+colnames(physummary) <- c("Physician_Primary_Type","Covered_Recipient_Type"
+                          ,"AveragePayment","NumberofPayments","TotalPayments")
 
+physummary$PctOfTotal <- physummary$TotalPayments/sum(physummary$TotalPayments)
+physummary$QtyPaymentsPctofTotal <- physummary$NumberofPayments/sum(physummary$NumberofPayments)
+
+
+print(physummary)
                                                          
 ```
+
+
 
 
