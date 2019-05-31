@@ -40,6 +40,15 @@ cmspayments$Physician_Specialty <- ifelse(nchar(cmspayments$Physician_Specialty)
 ```
 
 
+Split the string into columns
+```{r physspecial_split,echo=TRUE, include=TRUE}
+
+#within(cmspayments, FOO<-data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty), '|', fixed=TRUE))))
+physplit <- data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty),'|',fixed=TRUE)))
+colnames(physplit) <- c("PhysSpcOne","PhysSpcTwo","PhysSpcThree")
+cmspayments <- cbind(cmspayments,physplit)
+
+```
 ### Top Companies Prep
 Bring top companies into dataframe.
 
@@ -54,13 +63,6 @@ toppayor <- head(toppayor[order(toppayor$TotalPayment, decreasing= TRUE),], n = 
 ```
 
 
-```{r physspecial_split,echo=TRUE, include=TRUE}
-
-#within(cmspayments, FOO<-data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty), '|', fixed=TRUE))))
-physplit <- data.frame(do.call('rbind', strsplit(as.character(cmspayments$Physician_Specialty),'|',fixed=TRUE)))
-colnames(physplit) <- c("PhysSpcOne","PhysSpcTwo","PhysSpcThree")
-
-```
 
 
 ### Simplify the data manipulation
@@ -101,6 +103,9 @@ Then get the top companies with specialty only if they exist in the top 10 compa
 topspecialty <- RSQLite::dbGetQuery(conn = rsqlcon
                     , "select c.Submitting_Applicable_Manufacturer_or_Applicable_GPO_Name as Company
                              ,c.Physician_Specialty
+                             ,c.PhysSpcOne
+                             ,c.PhysSpcTwo
+                             ,c.PhysSpcThree
                              ,sum(c.Total_Amount_of_Payment_USDollars) as TotalPayments
                        from cmspaytable as c inner join (select distinct Company
                                           from topcompanytable
@@ -162,6 +167,21 @@ b+geom_bar(stat = "identity"
                                      )+ labs(y = "Total Payments")
 ```
 
+
+
+### Top Companies and Specialty Treemap
+The treemap represents the top 5 companies and specialties invested. Depuy and
+Mako invest in Orthopaedic Surgery. 
+Jansen invests in Internal Medicine.
+Pfizer and Allergan did not contain quality data to determine their largest
+specialties invested in. 
+Based on the treemap and not considering data that is not available: it can be
+seen that the top therapeutic areas are different amongst the competitors and
+may contribute to maintaining an advantage in the respective therapeutic areas.
+Further look into annual trends may reveal any changes that may suggest withdrawal
+or engagement in other areas
+
+
 ```{r treemap, echo=TRUE,include=TRUE}
 
 ### use ping to produce image and control size.
@@ -174,8 +194,8 @@ png(filename = specialtytree,
 )
 
 
-
-treemap::treemap(dtf = topspecialty, index = c("Company","Physician_Specialty")
+## use PhysSpcTwo for more specific view
+treemap::treemap(dtf = topspecialty, index = c("Company","PhysSpcTwo")
                  ,type = "index"
                  , fontsize.labels=c(12,10,10)
                  ,vSize = "TotalPayments"
@@ -195,9 +215,37 @@ dev.off()
 ![Specialty Tree Map](specialtytreemap.png)
 
 
+### Physician Group Analysis
 
 
+```{r trends, echo=TRUE, include=TRUE}
+
+phys <- cmspayments[c("Physician_Primary_Type"
+                      ,"Total_Amount_of_Payment_USDollars"
+                      ,"Physician_Profile_ID","Covered_Recipient_Type")]
+
+physmean <- aggregate(Total_Amount_of_Payment_USDollars~Covered_Recipient_Type+Physician_Primary_Type
+                     ,data = phys
+                     ,FUN = "mean"
+                     )
+#physmax <- aggregate(Total_Amount_of_Payment_USDollars~phys$Covered_Recipient_Type+phys$Physician_Primary_Type
+#                     ,data = phys
+#                     ,FUN = "max"
+#                     )
+
+physidcount <- aggregate(Total_Amount_of_Payment_USDollars~Covered_Recipient_Type+Physician_Primary_Type
+                     ,data = phys
+                     ,FUN = "length"
+                     )
+
+physummary <- merge(x=physmean,y=physidcount, by = c("Physician_Primary_Type"
+                                               ,"Covered_Recipient_Type")
+                    )
+colnames(physummary) <- c("Physician_Primary_Type","Covered_Recipient_Type"
+                          ,"AveragePayment","NumberofPayments")
 
 
+                                                         
+```
 
 
